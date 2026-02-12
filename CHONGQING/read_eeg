@@ -1,0 +1,28 @@
+
+import os
+import mne
+
+root_dir = r'CHONGQING/raw_eeg/'  # adjust if needed
+
+folders = [f for f in os.listdir(root_dir) if os.path.isdir(os.path.join(root_dir, f))]
+folders.sort()
+
+for subj in folders[:]:  # check first few
+
+    subj_path = os.path.join(root_dir, subj)
+    vhdr_path = os.path.join(subj_path, subj + '.vhdr')
+    print(f"\n=== {subj} ===")
+
+    try:
+        raw = mne.io.read_raw_brainvision(vhdr_path, preload=False)
+        print("✅ Successfully read file!")
+        print("Channels:", raw.ch_names[:10], "...")  # show first 10
+        print("Recording length (s):", raw.times[-1])
+        print("Sampling rate:", raw.info['sfreq'])
+        events, event_id = mne.events_from_annotations(raw, verbose=False)
+        print("Event IDs:", event_id)
+        print("Number of events:", len(events))
+        if len(events) > 0:
+            print("First few events:\n", events[:5])
+    except Exception as e:
+        print(f"❌ Could not read {subj}: {e}")
